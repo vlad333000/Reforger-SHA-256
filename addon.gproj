@@ -1,0 +1,8 @@
+GameProject {
+ ID "SHA256"
+ GUID "65FAB9E1A8F25367"
+ TITLE "SHA-256"
+ Dependencies {
+  "58D0FB3206B6F859"
+ }
+}
