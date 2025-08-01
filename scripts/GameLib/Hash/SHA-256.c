@@ -81,6 +81,66 @@ class SHA256 {
             result += SHA256_Helper.IntToStringHex(this.words[i]);
         return result;
     };
+
+
+
+	static bool Extract(SHA256 instance, ScriptCtx ctx, SSnapSerializerBase snapshot) {
+        for (int i = 0; i < words_count; i++) {
+            int word = instance.words[i];
+            snapshot.SerializeInt(word);
+        };
+		return true;
+	};
+
+	static bool Inject(SSnapSerializerBase snapshot, ScriptCtx ctx, SHA256 instance) {
+        for (int i = 0; i < words_count; i++) {
+            int word;
+            snapshot.SerializeInt(word);
+            instance.words[i] = word;
+        };
+		return true;
+	};
+
+	static void Encode(SSnapSerializerBase snapshot, ScriptCtx ctx, ScriptBitSerializer packet) {
+        for (int i = 0; i < words_count; i++)
+		    snapshot.EncodeInt(packet);
+	};
+
+	static bool Decode(ScriptBitSerializer packet, ScriptCtx ctx, SSnapSerializerBase snapshot) {
+        for (int i = 0; i < words_count; i++)
+		    snapshot.DecodeInt(packet);
+		return true;
+	};
+
+	static bool SnapCompare(SSnapSerializerBase lhs, SSnapSerializerBase rhs, ScriptCtx ctx) {
+        for (int i = 0; i < words_count; i++) {
+            int lword;
+            lhs.SerializeInt(lword);
+            int rword;
+            rhs.SerializeInt(rword);
+            if (lword != rword)
+                return false;
+        };
+		return true;
+	};
+
+	static bool PropCompare(SHA256 instance, SSnapSerializerBase snapshot, ScriptCtx ctx) {
+        for (int i = 0; i < words_count; i++)
+		    if (!snapshot.CompareInt(instance.words[i]))
+                return false;
+		return true;
+	};
+
+	static bool FromSnapshot(SSnapSerializerBase snapshot, ScriptCtx ctx, out SHA256 instance) {
+		int words[words_count];
+		for (int i = 0; i < words_count; i++) {
+			int word;
+			snapshot.SerializeInt(word);
+			words[i] = word;
+		};
+		instance = new SHA256(words);
+		return true;
+	};
 };
 
 class SHA256_Stream {
@@ -120,7 +180,7 @@ class SHA256_Stream {
     void SHA256_Stream() {
         #ifdef SHA256_DEBUG_ALLOC
         PrintFormat("[SHA256] %1: Created!", this);
-		
+
         PrintFormat("[SHA256]   h_count = %1", h_count);
         PrintFormat("[SHA256]   h_init = %1", h_init);
         foreach (auto i, auto v : h_init)
