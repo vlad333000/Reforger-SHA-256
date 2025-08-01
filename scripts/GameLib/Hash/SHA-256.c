@@ -565,10 +565,6 @@ class SHA256_Stream {
 		#endif
 
         for (int i = 0; i < k_count; i++) {
-            // #ifdef SHA256_DEBUG_V_V
-            // PrintFormat("[SHA256]     %1: Processing compression step %2...", this, i);
-            // #endif
-
             int S1 = SHA256_Helper.rotr(v[4], 6) ^ SHA256_Helper.rotr(v[4], 11) ^ SHA256_Helper.rotr(v[4], 25);
             int ch = (v[4] & v[5]) ^ ((~v[4]) & v[6]);
             int temp1 = v[7] + S1 + ch + k[i] + w[i];
@@ -576,14 +572,26 @@ class SHA256_Stream {
             int maj = (v[0] & v[1]) ^ (v[0] & v[2]) ^ (v[1] & v[2]);
             int temp2 = S0 + maj;
 
-            // #ifdef SHA256_DEBUG_V_V
-            // PrintFormat("[SHA256]         S1 = %1", SHA256_Helper.IntToStringHex(S1));
-            // PrintFormat("[SHA256]         ch = %1", SHA256_Helper.IntToStringHex(ch));
-            // PrintFormat("[SHA256]         temp1 = %1", SHA256_Helper.IntToStringHex(temp1));
-            // PrintFormat("[SHA256]         S0 = %1", SHA256_Helper.IntToStringHex(S0));
-            // PrintFormat("[SHA256]         maj = %1", SHA256_Helper.IntToStringHex(maj));
-            // PrintFormat("[SHA256]         temp2 = %1", SHA256_Helper.IntToStringHex(temp2));
-            // #endif
+            #ifdef SHA256_DEBUG_V_V_V_V
+		    PrintFormat("[SHA256]       i = %1", i);
+		    PrintFormat("[SHA256]         calc");
+		    PrintFormat("[SHA256]           v[4] = 0x%1", SHA256_Helper.IntToStringHex(v[4]));
+		    PrintFormat("[SHA256]           S1 = 0x%1", SHA256_Helper.IntToStringHex(S1));
+		    PrintFormat("[SHA256]           v[5] = 0x%1", SHA256_Helper.IntToStringHex(v[5]));
+		    PrintFormat("[SHA256]           v[6] = 0x%1", SHA256_Helper.IntToStringHex(v[6]));
+		    PrintFormat("[SHA256]           ch = 0x%1", SHA256_Helper.IntToStringHex(ch));
+		    PrintFormat("[SHA256]           v[7] = 0x%1", SHA256_Helper.IntToStringHex(v[7]));
+		    PrintFormat("[SHA256]           k[i] = 0x%1", SHA256_Helper.IntToStringHex(k[i]));
+		    PrintFormat("[SHA256]           w[i] = 0x%1", SHA256_Helper.IntToStringHex(w[i]));
+		    PrintFormat("[SHA256]           temp1 = 0x%1", SHA256_Helper.IntToStringHex(temp1));
+		    PrintFormat("[SHA256]           v[0] = 0x%1", SHA256_Helper.IntToStringHex(v[0]));
+		    PrintFormat("[SHA256]           S0 = 0x%1", SHA256_Helper.IntToStringHex(S0));
+		    PrintFormat("[SHA256]           v[1] = 0x%1", SHA256_Helper.IntToStringHex(v[1]));
+		    PrintFormat("[SHA256]           v[2] = 0x%1", SHA256_Helper.IntToStringHex(v[2]));
+		    PrintFormat("[SHA256]           maj = 0x%1", SHA256_Helper.IntToStringHex(maj));
+		    PrintFormat("[SHA256]           temp2 = 0x%1", SHA256_Helper.IntToStringHex(temp2));
+		    PrintFormat("[SHA256]           v[3] = 0x%1", SHA256_Helper.IntToStringHex(v[3]));
+            #endif
 
             v[7] = v[6];
             v[6] = v[5];
@@ -594,11 +602,12 @@ class SHA256_Stream {
             v[1] = v[0];
             v[0] = temp1 + temp2;
 
-            // #ifdef SHA256_DEBUG_V_V
-            // PrintFormat("[SHA256]     %1: Intermediate working variables:", this);
-		    // for (int j = 0; j < 8; j++)
-			//     PrintFormat("[SHA256]         v[%1] = 0x%2", j, SHA256_Helper.IntToStringHex(v[j]));
-            // #endif
+            #ifdef SHA256_DEBUG_V_V_V_V
+		    PrintFormat("[SHA256]         compress");
+		    PrintFormat("[SHA256]           v = %1", v);
+		    foreach (auto j, auto x : v)
+			    PrintFormat("[SHA256]             v[%1] = 0x%2", j, SHA256_Helper.IntToStringHex(x));
+            #endif
         };
 
 		#ifdef SHA256_DEBUG_V_V_V
