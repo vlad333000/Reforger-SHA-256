@@ -14,28 +14,28 @@
 // #define SHA256_DEBUG_V_V_V_V
 
 class SHA256 {
-	static const int hash_size = 256;
+	static const int s_HashSize = 256;
 
-    static const int word_size = SHA256_Helper.int_size_bits;
+    static const int s_WordSize = SHA256_Helper.s_IntSizeBits;
 
-	static const int words_count = hash_size / word_size;
+	static const int s_WordsCount = s_HashSize / s_WordSize;
 
-    protected int words[words_count];
+    protected int m_Words[s_WordsCount];
 
-    void SHA256(int words[words_count]) {
+    void SHA256(int words[s_WordsCount]) {
         #ifdef SHA256_DEBUG_ALLOC
         PrintFormat("[SHA256] %1: Created!", this);
-		PrintFormat("[SHA256]   hash_size = %1", hash_size);
-		PrintFormat("[SHA256]   word_size = %1", word_size);
-		PrintFormat("[SHA256]   words_count = %1", words_count);
+		PrintFormat("[SHA256]   hash_size = %1", s_HashSize);
+		PrintFormat("[SHA256]   word_size = %1", s_WordSize);
+		PrintFormat("[SHA256]   words_count = %1", s_WordsCount);
         #endif
 
-		for (int i = 0; i < words_count; i++)
-			this.words[i] = words[i];
+		for (int i = 0; i < s_WordsCount; i++)
+			m_Words[i] = words[i];
 
         #ifdef SHA256_DEBUG_V
         PrintFormat("[SHA256]   words = %1", words);
-		for (int i = 0; i < words_count; i++)
+		for (int i = 0; i < s_WordsCount; i++)
             PrintFormat("[SHA256]     words[%1] = 0x%2", i, SHA256_Helper.IntToStringHex(words[i]));
         #endif
     };
@@ -65,55 +65,55 @@ class SHA256 {
 	};
 
     SHA256 Copy() {
-        return new SHA256(this.words);
+        return new SHA256(m_Words);
     };
 
     bool IsEqualTo(notnull SHA256 other) {
-        for (int i = 0; i < words_count; i++)
-            if (words[i] != other.words[i])
+        for (int i = 0; i < s_WordsCount; i++)
+            if (m_Words[i] != other.m_Words[i])
                 return false;
         return true;
     };
 
     string AsString() {
         auto result = "";
-        for (int i = 0; i < words_count; i++)
-            result += SHA256_Helper.IntToStringHex(this.words[i]);
+        for (int i = 0; i < s_WordsCount; i++)
+            result += SHA256_Helper.IntToStringHex(m_Words[i]);
         return result;
     };
 
 
 
 	static bool Extract(SHA256 instance, ScriptCtx ctx, SSnapSerializerBase snapshot) {
-        for (int i = 0; i < words_count; i++) {
-            int word = instance.words[i];
+        for (int i = 0; i < s_WordsCount; i++) {
+            int word = instance.m_Words[i];
             snapshot.SerializeInt(word);
         };
 		return true;
 	};
 
 	static bool Inject(SSnapSerializerBase snapshot, ScriptCtx ctx, SHA256 instance) {
-        for (int i = 0; i < words_count; i++) {
+        for (int i = 0; i < s_WordsCount; i++) {
             int word;
             snapshot.SerializeInt(word);
-            instance.words[i] = word;
+            instance.m_Words[i] = word;
         };
 		return true;
 	};
 
 	static void Encode(SSnapSerializerBase snapshot, ScriptCtx ctx, ScriptBitSerializer packet) {
-        for (int i = 0; i < words_count; i++)
+        for (int i = 0; i < s_WordsCount; i++)
 		    snapshot.EncodeInt(packet);
 	};
 
 	static bool Decode(ScriptBitSerializer packet, ScriptCtx ctx, SSnapSerializerBase snapshot) {
-        for (int i = 0; i < words_count; i++)
+        for (int i = 0; i < s_WordsCount; i++)
 		    snapshot.DecodeInt(packet);
 		return true;
 	};
 
 	static bool SnapCompare(SSnapSerializerBase lhs, SSnapSerializerBase rhs, ScriptCtx ctx) {
-        for (int i = 0; i < words_count; i++) {
+        for (int i = 0; i < s_WordsCount; i++) {
             int lword;
             lhs.SerializeInt(lword);
             int rword;
@@ -125,15 +125,15 @@ class SHA256 {
 	};
 
 	static bool PropCompare(SHA256 instance, SSnapSerializerBase snapshot, ScriptCtx ctx) {
-        for (int i = 0; i < words_count; i++)
-		    if (!snapshot.CompareInt(instance.words[i]))
+        for (int i = 0; i < s_WordsCount; i++)
+		    if (!snapshot.CompareInt(instance.m_Words[i]))
                 return false;
 		return true;
 	};
 
 	static bool FromSnapshot(SSnapSerializerBase snapshot, ScriptCtx ctx, out SHA256 instance) {
-		int words[words_count];
-		for (int i = 0; i < words_count; i++) {
+		int words[s_WordsCount];
+		for (int i = 0; i < s_WordsCount; i++) {
 			int word;
 			snapshot.SerializeInt(word);
 			words[i] = word;
@@ -144,17 +144,17 @@ class SHA256 {
 };
 
 class SHA256_Stream {
-    protected static const int h_count = SHA256.words_count;
+    protected static const int s_HCount = SHA256.s_WordsCount;
 
-    protected int h[h_count];
+    protected int m_H[s_HCount];
 
-    protected static const int h_init[h_count] = {
+    protected static const int s_HInit[s_HCount] = {
         0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19
     };
 
-    protected static const int k_count = 64;
+    protected static const int s_KCount = 64;
 
-    protected static const int k[k_count] = {
+    protected static const int s_K[s_KCount] = {
         0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
         0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
         0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
@@ -165,15 +165,15 @@ class SHA256_Stream {
         0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
     };
 
-    protected int L;
+    protected int m_L;
 
-    static const int chunk_size = 512;
+    static const int s_ChunkSize = 512;
 
-    static const int chunk_word_size = SHA256_Helper.int_size_bits;
+    static const int s_ChunkWordSize = SHA256_Helper.s_IntSizeBits;
 
-    static const int chunk_words_count = chunk_size / chunk_word_size;
+    static const int s_ChunkWordsCount = s_ChunkSize / s_ChunkWordSize;
 
-    protected int chunk[chunk_words_count];
+    protected int m_Chunk[s_ChunkWordsCount];
 
 
 
@@ -181,19 +181,19 @@ class SHA256_Stream {
         #ifdef SHA256_DEBUG_ALLOC
         PrintFormat("[SHA256] %1: Created!", this);
 
-        PrintFormat("[SHA256]   h_count = %1", h_count);
-        PrintFormat("[SHA256]   h_init = %1", h_init);
-        foreach (auto i, auto v : h_init)
+        PrintFormat("[SHA256]   h_count = %1", s_HCount);
+        PrintFormat("[SHA256]   h_init = %1", s_HInit);
+        foreach (auto i, auto v : s_HInit)
         PrintFormat("[SHA256]     h_init[%1] = 0x%2", i, SHA256_Helper.IntToStringHex(v));
 
-        PrintFormat("[SHA256]   k_count = %1", k_count);
-        PrintFormat("[SHA256]   k = %1", k);
-        foreach (auto i, auto v : k)
+        PrintFormat("[SHA256]   k_count = %1", s_KCount);
+        PrintFormat("[SHA256]   k = %1", s_K);
+        foreach (auto i, auto v : s_K)
         PrintFormat("[SHA256]     k[%1] = 0x%2", i, SHA256_Helper.IntToStringHex(v));
 
-        PrintFormat("[SHA256]   chunk_size = %1", chunk_size);
-        PrintFormat("[SHA256]   chunk_word_size = %1", chunk_word_size);
-        PrintFormat("[SHA256]   chunk_words_count = %1", chunk_words_count);
+        PrintFormat("[SHA256]   chunk_size = %1", s_ChunkSize);
+        PrintFormat("[SHA256]   chunk_word_size = %1", s_ChunkWordSize);
+        PrintFormat("[SHA256]   chunk_words_count = %1", s_ChunkWordsCount);
         #endif
 
         Reset();
@@ -232,12 +232,12 @@ class SHA256_Stream {
 
     // Push bits, accept only 0 and 1 as input
     void PushBit(int bit) {
-        int l = L % chunk_size;
-        int i = l / chunk_word_size;
-        int j = chunk_word_size - (l % chunk_word_size) - 1;
-        chunk[i] = (chunk[i] & ~(1 << j)) | (bit << j);
-        L++;
-		if (L % chunk_size == 0)
+        int l = m_L % s_ChunkSize;
+        int i = l / s_ChunkWordSize;
+        int j = s_ChunkWordSize - (l % s_ChunkWordSize) - 1;
+        m_Chunk[i] = (m_Chunk[i] & ~(1 << j)) | (bit << j);
+        m_L++;
+		if (m_L % s_ChunkSize == 0)
 			ProcessChunk();
     };
 
@@ -281,15 +281,15 @@ class SHA256_Stream {
 	};
 
     void PushBitsV(int bits[], int n) {
-        for (int i = 0; i < n / chunk_word_size; i++)
-            PushBitsV(bits[i], chunk_word_size);
-        PushBitsV(bits[n / chunk_word_size], n % chunk_word_size);
+        for (int i = 0; i < n / s_ChunkWordSize; i++)
+            PushBitsV(bits[i], s_ChunkWordSize);
+        PushBitsV(bits[n / s_ChunkWordSize], n % s_ChunkWordSize);
     };
 
     void PushBitsV(notnull array<int> bits, int n) {
-        for (int i = 0; i < n / chunk_word_size; i++)
-            PushBitsV(bits[i], chunk_word_size);
-        PushBitsV(bits[n / chunk_word_size], n % chunk_word_size);
+        for (int i = 0; i < n / s_ChunkWordSize; i++)
+            PushBitsV(bits[i], s_ChunkWordSize);
+        PushBitsV(bits[n / s_ChunkWordSize], n % s_ChunkWordSize);
     };
 
 	void PushBytesV(notnull array<int> bytes, int n) {
@@ -301,7 +301,7 @@ class SHA256_Stream {
 
     // Push words (32 bits)
     void PushWord(int word) {
-		PushBitsV(word, chunk_word_size);
+		PushBitsV(word, s_ChunkWordSize);
 	};
 
     void PushWord(int word, int n) {
@@ -319,8 +319,8 @@ class SHA256_Stream {
             PushWord(word);
     };
 
-    void PushChunk(int chunk[chunk_words_count]) {
-        for (int i = 0; i < chunk_words_count; i++)
+    void PushChunk(int chunk[s_ChunkWordsCount]) {
+        for (int i = 0; i < s_ChunkWordsCount; i++)
             PushWord(chunk[i]);
     };
 
@@ -361,7 +361,7 @@ class SHA256_Stream {
 
         Finalize();
 
-        auto hash = new SHA256(h);
+        auto hash = new SHA256(m_H);
 
         #ifdef SHA256_DEBUG
         PrintFormat("[SHA256] %1: Hashed!", this);
@@ -381,14 +381,14 @@ class SHA256_Stream {
         PrintFormat("[SHA256] %1: Hashing...", this);
         #endif
 
-        int L0 = L;
-        int h0[h_count];
-		for (int i = 0; i < h_count; i++)
-            h0[i] = h[i];
+        int L0 = m_L;
+        int h0[s_HCount];
+		for (int i = 0; i < s_HCount; i++)
+            h0[i] = m_H[i];
         #ifdef SHA256_ZERO_CHUNK
-        int chunk0[chunk_words_count]
-        for (int i = 0; i < chunk_words_count; i++)
-            chunk0[i] = chunk[i];
+        int chunk0[s_ChunkWordsCount]
+        for (int i = 0; i < s_ChunkWordsCount; i++)
+            chunk0[i] = m_Chunk[i];
         #endif
 
         #ifdef SHA256_DEBUG_V_V
@@ -406,30 +406,30 @@ class SHA256_Stream {
 
         Finalize();
 
-        auto hash = new SHA256(h);
+        auto hash = new SHA256(m_H);
 
         #ifdef SHA256_DEBUG
         PrintFormat("[SHA256] %1: Hashed!", this);
         PrintFormat("[SHA256]   hash = %1 (0x%2)", hash, hash.AsString());
         #endif
 
-        L = L0;
-		for (int i = 0; i < h_count; i++)
-            h[i] = h0[i];
+        m_L = L0;
+		for (int i = 0; i < s_HCount; i++)
+            m_H[i] = h0[i];
         #ifdef SHA256_ZERO_CHUNK
-        for (int i = 0; i < chunk_words_count; i++)
-            chunk[i] = chunk0[i];
+        for (int i = 0; i < s_ChunkWordsCount; i++)
+            m_Chunk[i] = chunk0[i];
         #endif
 
         #ifdef SHA256_DEBUG_V_V
         PrintFormat("[SHA256]   Restored state:");
-		PrintFormat("[SHA256]     L = %1", L);
-		PrintFormat("[SHA256]     h = %1", h);
+		PrintFormat("[SHA256]     L = %1", m_L);
+		PrintFormat("[SHA256]     h = %1", m_H);
 		foreach (auto i, auto v : h0)
 		 	PrintFormat("[SHA256]      h[%1] = 0x%2", i, SHA256_Helper.IntToStringHex(v));
         #ifdef SHA256_ZERO_CHUNK
-		PrintFormat("[SHA256]     chunk = %1", chunk);
-		foreach (auto i, auto v : chunk)
+		PrintFormat("[SHA256]     chunk = %1", m_Chunk);
+		foreach (auto i, auto v : m_Chunk)
 		 	PrintFormat("[SHA256]      chunk[%1] = 0x%2", i, SHA256_Helper.IntToStringHex(v));
         #endif
         #endif
@@ -442,28 +442,28 @@ class SHA256_Stream {
         PrintFormat("[SHA256] %1: Resetting...", this);
         #endif
 
-		foreach (auto i, auto v : h_init)
-			h[i] = v;
+		foreach (auto i, auto v : s_HInit)
+			m_H[i] = v;
 
         #ifdef SHA256_DEBUG_V_V
-		PrintFormat("[SHA256]   h = %1", h);
-		foreach (auto i, auto v : h)
+		PrintFormat("[SHA256]   h = %1", m_H);
+		foreach (auto i, auto v : m_H)
 		 	PrintFormat("[SHA256]      h[%1] = 0x%2", i, SHA256_Helper.IntToStringHex(v));
         #endif
 
-		L = 0;
+		m_L = 0;
 
         #ifdef SHA256_DEBUG_V_V
-		PrintFormat("[SHA256]   L = %1", L);
+		PrintFormat("[SHA256]   L = %1", m_L);
         #endif
 
         #ifdef SHA256_ZERO_CHUNK
-		foreach (auto i, auto v : chunk)
+		foreach (auto i, auto v : m_Chunk)
             chunk[i] = 0x00000000;
 
         #ifdef SHA256_DEBUG_V_V
-		PrintFormat("[SHA256]   chunk = %1", chunk);
-        foreach (auto i, auto v : chunk)
+		PrintFormat("[SHA256]   chunk = %1", m_Chunk);
+        foreach (auto i, auto v : m_Chunk)
             PrintFormat("[SHA256]     chunk[%1] = 0x%2", i, SHA256_Helper.IntToStringHex(v));
         #endif
         #endif
@@ -481,15 +481,15 @@ class SHA256_Stream {
         #endif
 
         auto K = 0;
-		while ((L + 1 + K + 64) % chunk_size != 0)
+		while ((m_L + 1 + K + 64) % s_ChunkSize != 0)
 			K++;
 
         #ifdef SHA256_DEBUG_V_V
-        PrintFormat("[SHA256]     L = %1", L);
+        PrintFormat("[SHA256]     L = %1", m_L);
         PrintFormat("[SHA256]     K = %1", K);
         #endif
 
-		auto l = L;
+		auto l = m_L;
         PushBit(1);
         for (int i = 0; i < K; i++)
             PushBit(0);
@@ -503,13 +503,13 @@ class SHA256_Stream {
 
     protected void ProcessChunk() {
 		#ifdef SHA256_DEBUG
-		auto n = L / chunk_size - 1;
+		auto n = m_L / s_ChunkSize - 1;
 		PrintFormat("[SHA256]   %1: Processing chunk #%2...", this, n);
         #endif
 
         #ifdef SHA256_DEBUG_V_V
-        PrintFormat("[SHA256]     chunk = %1", chunk);
-		foreach (auto i, auto v : chunk)
+        PrintFormat("[SHA256]     chunk = %1", m_Chunk);
+		foreach (auto i, auto v : m_Chunk)
 			PrintFormat("[SHA256]       chunk[%1] = 0x%2", i, SHA256_Helper.IntToStringHex(v));
 		#endif
 
@@ -517,17 +517,17 @@ class SHA256_Stream {
         PrintFormat("[SHA256]     Scheduling...");
         #endif
 
-        int w[k_count];
+        int w[s_KCount];
 
-        for (int i = 0; i < chunk_words_count; i++) {
-            w[i] = chunk[i];
+        for (int i = 0; i < s_ChunkWordsCount; i++) {
+            w[i] = m_Chunk[i];
             #ifdef SHA256_DEBUG_V_V_V_V
 		    PrintFormat("[SHA256]       i = %1", i);
 		    PrintFormat("[SHA256]         w[i] = 0x%1", SHA256_Helper.IntToStringHex(w[i]));
             #endif
         };
 
-        for (int i = chunk_words_count; i < k_count; i++) {
+        for (int i = s_ChunkWordsCount; i < s_KCount; i++) {
             int s0 = SHA256_Helper.rotr(w[i - 15], 7) ^ SHA256_Helper.rotr(w[i - 15], 18) ^ SHA256_Helper.shr(w[i - 15], 3);
             int s1 = SHA256_Helper.rotr(w[i - 2], 17) ^ SHA256_Helper.rotr(w[i - 2], 19) ^ SHA256_Helper.shr(w[i - 2], 10);
             w[i] = w[i - 16] + s0 + w[i - 7] + s1;
@@ -553,9 +553,9 @@ class SHA256_Stream {
 			PrintFormat("[SHA256]       w[%1] = 0x%2", i, SHA256_Helper.IntToStringHex(v));
 		#endif
 
-        int v[h_count];
-        for (int i = 0; i < h_count; i++)
-            v[i] = h[i];
+        int v[s_HCount];
+        for (int i = 0; i < s_HCount; i++)
+            v[i] = m_H[i];
 
 		#ifdef SHA256_DEBUG_V_V_V
         PrintFormat("[SHA256]   Compression...");
@@ -564,10 +564,10 @@ class SHA256_Stream {
 			PrintFormat("[SHA256]       v[%1] = 0x%2", i, SHA256_Helper.IntToStringHex(x));
 		#endif
 
-        for (int i = 0; i < k_count; i++) {
+        for (int i = 0; i < s_KCount; i++) {
             int S1 = SHA256_Helper.rotr(v[4], 6) ^ SHA256_Helper.rotr(v[4], 11) ^ SHA256_Helper.rotr(v[4], 25);
             int ch = (v[4] & v[5]) ^ ((~v[4]) & v[6]);
-            int temp1 = v[7] + S1 + ch + k[i] + w[i];
+            int temp1 = v[7] + S1 + ch + s_K[i] + w[i];
             int S0 = SHA256_Helper.rotr(v[0], 2) ^ SHA256_Helper.rotr(v[0], 13) ^ SHA256_Helper.rotr(v[0], 22);
             int maj = (v[0] & v[1]) ^ (v[0] & v[2]) ^ (v[1] & v[2]);
             int temp2 = S0 + maj;
@@ -581,7 +581,7 @@ class SHA256_Stream {
 		    PrintFormat("[SHA256]           v[6] = 0x%1", SHA256_Helper.IntToStringHex(v[6]));
 		    PrintFormat("[SHA256]           ch = 0x%1", SHA256_Helper.IntToStringHex(ch));
 		    PrintFormat("[SHA256]           v[7] = 0x%1", SHA256_Helper.IntToStringHex(v[7]));
-		    PrintFormat("[SHA256]           k[i] = 0x%1", SHA256_Helper.IntToStringHex(k[i]));
+		    PrintFormat("[SHA256]           k[i] = 0x%1", SHA256_Helper.IntToStringHex(s_K[i]));
 		    PrintFormat("[SHA256]           w[i] = 0x%1", SHA256_Helper.IntToStringHex(w[i]));
 		    PrintFormat("[SHA256]           temp1 = 0x%1", SHA256_Helper.IntToStringHex(temp1));
 		    PrintFormat("[SHA256]           v[0] = 0x%1", SHA256_Helper.IntToStringHex(v[0]));
@@ -618,11 +618,11 @@ class SHA256_Stream {
 		#endif
 
         for (int i = 0; i < 8; i++)
-            h[i] = h[i] + v[i];
+            m_H[i] = m_H[i] + v[i];
 
 		#ifdef SHA256_DEBUG_V_V_V
-		PrintFormat("[SHA256]     h = %1", h);
-		foreach (auto i, auto x : h)
+		PrintFormat("[SHA256]     h = %1", m_H);
+		foreach (auto i, auto x : m_H)
 			PrintFormat("[SHA256]       h[%1] = 0x%2", i, SHA256_Helper.IntToStringHex(x));
 		#endif
 
@@ -633,40 +633,40 @@ class SHA256_Stream {
 };
 
 class SHA256_Helper {
-    static const int byte_size = 8;
+    static const int s_ByteSize = 8;
 
-    static const int byte_mask = 0xFF;
+    static const int s_ByteMask = 0xFF;
 
-    static const int byte_half_size = 4;
+    static const int s_ByteHalfSize = 4;
 
-    static const int byte_half_mask = 0x0F;
+    static const int s_ByteHalfMask = 0x0F;
 
-    static const int int_size = 4;
+    static const int s_IntSize = 4;
 
-    static const int int_size_bits = int_size * byte_size;
+    static const int s_IntSizeBits = s_IntSize * s_ByteSize;
 
-    static const int int_sign_mask = 0x80000000;
+    static const int s_IntSignMask = 0x80000000;
 
-    static const string hex = "0123456789abcdef";
+    static const string s_Hex = "0123456789abcdef";
 
 	// rotate right
 	static int rotr(int x, int n) {
-	    return shr(x, n) | (x << (int_size_bits - n));
+	    return shr(x, n) | (x << (s_IntSizeBits - n));
 	};
 
 	// shift right logical
 	static int shr(int x, int n) {
 	    if (x < 0)
-			return ((x & ~int_sign_mask) >> n) | (1 << (int_size_bits - n - 1));
+			return ((x & ~s_IntSignMask) >> n) | (1 << (s_IntSizeBits - n - 1));
 	    return x >> n;
 	};
 
 	static string IntToStringHex(int x) {
 		auto result = "";
-	    for (int i = 0; i < int_size; i++) {
-	        auto byte = (x >> ((int_size - i - 1) * byte_size)) & byte_mask;
-	        result += hex[byte >> byte_half_size];
-	        result += hex[byte & byte_half_mask];
+	    for (int i = 0; i < s_IntSize; i++) {
+	        auto byte = (x >> ((s_IntSize - i - 1) * s_ByteSize)) & s_ByteMask;
+	        result += s_Hex[byte >> s_ByteHalfSize];
+	        result += s_Hex[byte & s_ByteHalfMask];
 	    };
 		return result;
 	};
